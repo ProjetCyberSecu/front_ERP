@@ -1,9 +1,7 @@
-import React, {FC, useRef, FormEventHandler} from 'react'
-import Cookies from "js-cookie";
+import React, {FC, useRef} from 'react'
 import {useMutation} from "@tanstack/react-query";
 import {login} from "../../services/auth.service";
 import Spinner from "../Partials/Spinner/Spinner";
-import {Navigate} from "react-router-dom";
 
 const Login: FC = () => {
 
@@ -60,7 +58,7 @@ const Login: FC = () => {
                         </div>
                     </form>
                     <p className="text-center text-gray-500 text-xs">
-                        &copy;2020 Acme Corp. All rights reserved.
+                        &copy;2022 KillerBee. All rights reserved.
                     </p>
                 </div>
             </div>
