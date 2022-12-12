@@ -1,17 +1,20 @@
-import React, {FC, useRef} from 'react'
+import React, {FC, useContext, useRef} from 'react'
 import {useMutation} from "@tanstack/react-query";
 import {login} from "../../services/auth.service";
 import Spinner from "../Partials/Spinner/Spinner";
+import {AuthContext} from "../../App";
 
 const Login: FC = () => {
 
     const username = useRef<HTMLInputElement>(null)
     const password = useRef<HTMLInputElement>(null)
 
+    const authContext = useContext(AuthContext)
+
     const loginMutation = useMutation({
         mutationFn: async () => {
             if (username.current && password.current) {
-                await login(username.current.value, password.current.value)
+                await login(authContext, username.current.value, password.current.value)
             } else {
                 throw new Error('Une erreur est survenue.')
             }

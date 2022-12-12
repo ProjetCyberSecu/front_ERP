@@ -7,7 +7,9 @@ import Login from "./components/pages/Login";
 import RequireAuth from "./middlwares/RequireAuth";
 import RequireNotToBeLoggedIn from "./middlwares/RequireNotToBeLoggedIn";
 import Dashboard from "./components/pages/Dashboard";
-import Test from "./components/pages/Test";
+import FrisbeePage from "./components/pages/FrisbeePage";
+import IngredientPage from "./components/pages/IngredientPage";
+import ProcessPage from "./components/pages/ProcessPage";
 
 const Router = () => {
     const [isLoaded, setIsLoaded] = useState(false)
@@ -31,7 +33,9 @@ const Router = () => {
                         </RequireAuth>
                     }>
                         <Route path="/" element={<Dashboard />}/>
-                        <Route path="/test" element={<Test />}/>
+                        <Route path="/frisbees" element={<FrisbeePage />}/>
+                        <Route path="/ingredients" element={<IngredientPage />}/>
+                        <Route path="/processes" element={<ProcessPage />}/>
                     </Route>
                     <Route path='/login' element={
                         <RequireNotToBeLoggedIn>

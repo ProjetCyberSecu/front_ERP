@@ -3,8 +3,12 @@ import './App.css'
 import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query'
 import {User} from "./dataValidation/authUserDatavalidation";
 import Router from "./Router";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css"
+import "primeicons/primeicons.css";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-interface IAuthContext {
+export interface IAuthContext {
     user: User | null
 }
 
@@ -20,6 +24,7 @@ function App() {
                     <AuthContext.Provider value={{user: null}}>
                         <Router />
                     </AuthContext.Provider>
+                <ReactQueryDevtools initialIsOpen={false} />
             </QueryClientProvider>
         </StrictMode>
     )
