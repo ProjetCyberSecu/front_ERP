@@ -15,6 +15,7 @@ import EditFrisbee from "./components/pages/EditFrisbee";
 import CreateFrisbee from "./components/pages/CreateFrisbee";
 import CreateProcess from "./components/pages/CreateProcess";
 import EditProcess from "./components/pages/EditProcess";
+import CreateIngredient from "./components/pages/CreateIngredient";
 
 const Router = () => {
     const [isLoaded, setIsLoaded] = useState(false)
@@ -43,6 +44,7 @@ const Router = () => {
                         <Route path="/frisbee/:frisbeeId/edit" element={<EditFrisbee />}/>
                         <Route path="/frisbee/:frisbeeId" element={<FrisbeePage />}/>
                         <Route path="/ingredients" element={<IngredientPage />}/>
+                        <Route path="/ingredients/create" element={<CreateIngredient />}/>
                         <Route path="/processes" element={<ProcessPage />}/>
                         <Route path="/processes/create" element={<CreateProcess />}/>
                         <Route path="/processes/:processId/edit" element={<EditProcess />}/>

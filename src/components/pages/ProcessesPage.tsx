@@ -5,7 +5,7 @@ import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {checkTokens} from "../../services/auth.service";
 import {Link, useNavigate} from "react-router-dom";
 import {AuthContext} from "../../App";
-import {getAllProcesses} from "../../services/process.service";
+import {deleteOneProcess, getAllProcesses} from "../../services/process.service";
 import {Frisbee} from "../../services/frisbee.service";
 import {Button} from "primereact/button";
 
@@ -17,7 +17,7 @@ const EditRow = (rowData: Frisbee) => {
     const deleteMutation = useMutation({
         mutationFn: async () => {
             await checkTokens(navigate, authContext)
-            // await deleteOneFrisbee(rowData.id)}
+            await deleteOneProcess(rowData.id)
         },
         onSuccess: async () => {
             await queryClient.invalidateQueries({queryKey: ['all_processes']})

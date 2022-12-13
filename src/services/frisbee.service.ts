@@ -3,6 +3,7 @@ import {logout} from "./auth.service";
 import {NavigateFunction} from "react-router-dom";
 import {IAuthContext} from "../App";
 import EditFrisbee from "../components/pages/EditFrisbee";
+import {APiResponse} from "../Types";
 
 export type Frisbee = {
     "id": number,
@@ -50,7 +51,7 @@ export const getOneFrisbeeById = async (frisbeeId: number, navigate: NavigateFun
     })
 
     if (result.ok) {
-        const jsoned = await result.json() as {status: number, response: Frisbee}
+        const jsoned = await result.json() as APiResponse<Frisbee>
         return jsoned.response
     } else if (result.status === 401) {
         throw new Error('Vous n\'etes pas authorisé à recuperer ce frisbee')

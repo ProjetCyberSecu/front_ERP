@@ -1,7 +1,7 @@
 import Cookies from "js-cookie";
 import {EditableProcess} from "../components/pages/CreateProcess";
 import {NavigateFunction} from "react-router-dom";
-import {Frisbee} from "./frisbee.service";
+import {APiResponse} from "../Types";
 
 export type ErpApiResponse = { status: number, response: Process }
 
@@ -34,7 +34,7 @@ export const getAllProcesses = async (): Promise<Process[]> => {
     })
 
     if (result.ok) {
-        const parsedResult = await result.json() as {status: number, response: Process[]}
+        const parsedResult = await result.json() as APiResponse<Process[]>
         return parsedResult.response
     }
     return []
@@ -87,7 +87,7 @@ export const getOneProcessById = async (processId: number, navigate: NavigateFun
     })
 
     if (result.ok) {
-        const jsoned = await result.json() as {status: number, response: Frisbee}
+        const jsoned = await result.json() as APiResponse<Process>
         return jsoned.response
     } else if (result.status === 401) {
         throw new Error('Vous n\'etes pas authorisé à recuperer ce process')
@@ -96,5 +96,22 @@ export const getOneProcessById = async (processId: number, navigate: NavigateFun
         throw new Error('page not found')
     } else {
         throw new Error('Une erreur est survenue')
+    }
+}
+
+export const deleteOneProcess = async (processId: number): Promise<void> => {
+
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes/${processId}`, {
+        method: 'DELETE',
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
+    })
+    if (!result.ok) {
+        if (result.status === 401) {
+            throw new Error('Vous n\' etes pas authorisé a suprimer ce frisbee')
+        } else {
+            throw new Error('Une erreur est survenue')
+        }
     }
 }
