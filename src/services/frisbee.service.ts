@@ -1,10 +1,8 @@
 import Cookies from "js-cookie";
-import {Simulate} from "react-dom/test-utils";
-import canPlayThrough = Simulate.canPlayThrough;
 import {logout} from "./auth.service";
-import {NavigateFunction, useNavigate} from "react-router-dom";
-import {AuthContext, IAuthContext} from "../App";
-import {useContext} from "react";
+import {NavigateFunction} from "react-router-dom";
+import {IAuthContext} from "../App";
+import EditFrisbee from "../components/pages/EditFrisbee";
 
 export type Frisbee = {
     "id": number,
@@ -12,15 +10,8 @@ export type Frisbee = {
     "description": string,
     "price_wt": number,
     "range": string,
-    "processId": number
+    "processId"?: number
 }
-
-// TODO Remove this fake list
-let frisbeeList: Frisbee[] = [
-    {id: 1, name: 'super frisbee', description: '', price_wt: 34.5, range: 'hight quality max 😎😎', processId: 1},
-    {id: 2, name: 'frisbee nul', description: '', price_wt: 3, range: 'quality eclatax', processId: 2},
-    {id: 3, name: 'frisbee bof en vrai', description: '', price_wt: 10.5, range: 'ca va pour noel genre', processId: 3}
-]
 
 /**
  * Function that fetch all Frisbees
@@ -31,58 +22,74 @@ export const getAllFrisbee = async (navigate: NavigateFunction, authContext: IAu
 
     // TODO uncomment below to request api endpoint
 
-    // const result = await fetch(`${import.meta.env.VITE_FREESBEE_API_HOST}/frisbees`, {
-    //     headers: {
-    //         'authorization': `Bearer ${Cookies.get('accessToken')}`
-    //     }
-    // })
-    //
-    // if (result.ok) {
-    //     return await result.json()
-    // } else if (result.status === 401) {
-    //     logout(navigate, authContext)
-    //     return []
-    // } else {
-    //     throw new Error('Une erreur est survenue')
-    // }
+    console.log(import.meta.env.VITE_FRISBEE_API_HOST)
 
-    // TODO remove this fake request
-    return await new Promise<Frisbee[]>((resolve) => {
-        setTimeout(() => {resolve(frisbeeList)}, 500)
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees`, {
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
     })
+
+    if (result.ok) {
+        const jsoned = await result.json()
+        return jsoned.response
+    } else if (result.status === 401) {
+        logout(navigate, authContext)
+        return []
+    } else {
+        throw new Error('Une erreur est survenue')
+    }
+}
+
+export const getOneFrisbeeById = async (frisbeeId: number, navigate: NavigateFunction): Promise<Frisbee> => {
+
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
+    })
+
+    if (result.ok) {
+        const jsoned = await result.json() as {status: number, response: Frisbee}
+        return jsoned.response
+    } else if (result.status === 401) {
+        throw new Error('Vous n\'etes pas authorisé à recuperer ce frisbee')
+    }else if (result.status === 404){
+        navigate('/404')
+        throw new Error('page not found')
+    } else {
+        throw new Error('Une erreur est survenue')
+    }
 }
 
 export const deleteOneFrisbee = async (frisbeeId: number): Promise<void> => {
 
-    // TODO uncomment below to request API
-    // const result = await fetch(`${import.meta.env.VITE_FREESBEE_API_HOST}/frisbees/${frisbeeId}`, {
-    //     method: 'DELETE',
-    //     headers: {
-    //         'authorization': `Bearer ${Cookies.get('accessToken')}`
-    //     }
-    // })
-    // if (!result.ok) {
-    //     if (result.status === 401) {
-    //         throw new Error('Vous n\' etes pas authorisé a suprimer ce frisbee')
-    //     } else {
-    //         throw new Error('Une erreur est survenue')
-    //     }
-    // }
-
-    // TODO Remove this fake loading...
-    frisbeeList = frisbeeList.filter(e => e.id !== frisbeeId)
-    await new Promise(resolve => setTimeout(resolve, 500))
-}
-
-export const EditOneFrisbee = async (frisbee: Frisbee): Promise<void> => {
-
-    // TODO uncomment below to request API
-    const result = await fetch(`${import.meta.env.VITE_FREESBEE_API_HOST}/frisbees/${frisbee.id}`, {
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
         method: 'DELETE',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
+    })
+    if (!result.ok) {
+        if (result.status === 401) {
+            throw new Error('Vous n\' etes pas authorisé a suprimer ce frisbee')
+        } else {
+            throw new Error('Une erreur est survenue')
+        }
+    }
+}
+
+export const editOneFrisbee = async (frisbeeId: number, frisbee: EditFrisbee): Promise<void> => {
+
+    const frisbeeToReturn = frisbee.processId? frisbee : {...frisbee, processId: null}
+
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
+        method: 'PATCH',
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`,
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(frisbee)
+        body: JSON.stringify(frisbeeToReturn)
     })
     if (!result.ok) {
         if (result.status === 401) {
@@ -91,9 +98,23 @@ export const EditOneFrisbee = async (frisbee: Frisbee): Promise<void> => {
             throw new Error('Une erreur est survenue')
         }
     }
+}
 
-    // TODO Remove this fake loading...
-    const index = frisbeeList.findIndex(e => e.id === frisbee.id)
-    frisbeeList[index] = frisbee
-    await new Promise(resolve => setTimeout(resolve, 500))
+export const createFrisbee = async (frisbee: EditFrisbee): Promise<void> => {
+
+    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees`, {
+        method: 'POST',
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({...frisbee, processId: null})
+    })
+    if (!result.ok) {
+        if (result.status === 401) {
+            throw new Error('Vous n\' etes pas authorisé a editer ce frisbee')
+        } else {
+            throw new Error('Une erreur est survenue')
+        }
+    }
 }

@@ -1,68 +1,43 @@
 import React, {FC, useContext} from 'react'
-import {Navigate, useNavigate, useParams} from "react-router-dom";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
+import {useNavigate} from "react-router-dom";
+import {useMutation, useQueryClient} from "@tanstack/react-query";
 import {checkTokens} from "../../services/auth.service";
 import {AuthContext} from "../../App";
-import {editOneFrisbee, Frisbee, getOneFrisbeeById} from "../../services/frisbee.service";
+import {createFrisbee, Frisbee} from "../../services/frisbee.service";
 import {useForm} from "react-hook-form";
 import {Button} from "primereact/button";
 
-type EditFrisbee = Omit<Frisbee, 'id'>
+type EditFrisbee = Omit<Frisbee, 'id' | 'processId'>
 
-const EditFrisbee: FC = () => {
-    const {frisbeeId} = useParams()
+const CreateFrisbee: FC = () => {
     const navigation = useNavigate()
     const authContext = useContext(AuthContext)
     const queryClient = useQueryClient()
 
-    if (!frisbeeId) {
-        return (<Navigate to='/404'/>)
-    }
-
-    const {data, isLoading} = useQuery({
-        queryKey: [`frisbee_${frisbeeId}`],
-        queryFn: async () => {
-            await checkTokens(navigation, authContext)
-            return await getOneFrisbeeById(parseInt(frisbeeId), navigation)
-        }
-    })
-
     const {register, handleSubmit, formState: {errors}} = useForm<EditFrisbee>()
 
     const mutation = useMutation({
-        mutationKey: [`frisbee_${frisbeeId}`],
-        mutationFn: async (edit: EditFrisbee) => {
+        mutationFn: async (frisbee: EditFrisbee) => {
             await checkTokens(navigation, authContext)
-            await editOneFrisbee(parseInt(frisbeeId), edit)
+            await createFrisbee(frisbee)
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries(['all_frisbee', `frisbee_${frisbeeId}`])
-            navigation(`/frisbee/${frisbeeId}`)
+            await queryClient.invalidateQueries(['all_frisbee'])
+            navigation('/frisbees')
         }
     })
 
-    const onSubmit = (editedFrisbee: EditFrisbee) => {
+    const onSubmit = (data: EditFrisbee) => {
         if (!mutation.isLoading) {
-            mutation.mutate(editedFrisbee)
+            mutation.mutate(data)
         }
-    }
-
-    if (isLoading) {
-        return (
-            <section>
-                <div className="mx-auto max-w-7xl mb-5">
-                    <h1 className="text-4xl font-semibold text-gray-900">Edition du frisbee {frisbeeId}</h1>
-                </div>
-                <h2>Chargement...</h2>
-            </section>
-        )
     }
 
 
     return (
         <section>
             <div className="mx-auto max-w-7xl mb-5">
-                <h1 className="text-4xl font-semibold text-gray-900">Frisbee {frisbeeId}</h1>
+                <h1 className="text-4xl font-semibold text-gray-900">Creation de frisbee</h1>
             </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="mb-4">
@@ -70,7 +45,6 @@ const EditFrisbee: FC = () => {
                         Nom
                     </label>
                     <input
-                        defaultValue={data?.name}
                         {...register('name', {required: 'Nom du frisbee obligatoire'})}
                         className={`shadow ${errors.name ? 'shadow-red-500 ' : ''} appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
                         id="name" type="text" placeholder="Username"/>
@@ -82,7 +56,6 @@ const EditFrisbee: FC = () => {
                         Description
                     </label>
                     <textarea
-                        defaultValue={data?.description}
                         {...register('description')}
                         id="description" rows={4}
                         className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -96,7 +69,6 @@ const EditFrisbee: FC = () => {
                     <input
                         type="number"
                         step={0.01}
-                        defaultValue={data?.price_wt}
                         {...register('price_wt', {required: 'Prix HT obligatoire', valueAsNumber: true})}
                         id="price"
                         className={`shadow ${errors.price_wt ? 'shadow-red-500' : ''} appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
@@ -110,7 +82,6 @@ const EditFrisbee: FC = () => {
                     </label>
                     <input
                         type="text"
-                        defaultValue={data?.range}
                         {...register('range', {required: 'Gamme obligatoire'})}
                         id="range"
                         className={`shadow ${errors.range ? 'shadow-red-500' : ''} appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
@@ -126,4 +97,4 @@ const EditFrisbee: FC = () => {
     )
 }
 
-export default EditFrisbee
+export default CreateFrisbee

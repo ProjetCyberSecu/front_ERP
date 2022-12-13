@@ -1,68 +1,122 @@
-import React, {FC, useContext} from 'react'
-import {DataTable} from "primereact/datatable";
-import {Column} from "primereact/column";
-import {Link, useNavigate} from "react-router-dom";
-import {Button} from "primereact/button";
-import type {Frisbee} from "../../services/frisbee.service";
+import React, {useContext} from 'react'
+import {Navigate, NavigateFunction, useNavigate, useParams} from "react-router-dom";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {deleteOneFrisbee, getAllFrisbee} from "../../services/frisbee.service";
 import {checkTokens} from "../../services/auth.service";
-import {AuthContext} from "../../App";
+import {AuthContext, IAuthContext} from "../../App";
+import {editOneFrisbee, Frisbee, getOneFrisbeeById} from "../../services/frisbee.service";
+import type {Process} from "../../services/process.service";
+import {getAllProcesses, getProcessById} from "../../services/process.service";
+import {Dropdown} from "primereact/dropdown";
 
-
-const EditRow = (rowData: Frisbee) => {
-    const queryClient = useQueryClient()
-    const navigate = useNavigate()
-    const authContext = useContext(AuthContext)
-
-    const mutation = useMutation({
-        mutationFn: async () => {
-            await checkTokens(navigate, authContext)
-            await deleteOneFrisbee(rowData.id)},
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({queryKey: ['all_frisbees']})
-        }
-    })
-
-    return (
-        <>
-            <span className="mr-2">
-                <Button onClick={() => {mutation.mutate()}} loading={mutation.isLoading} loadingIcon="pi pi-spin pi-spinner" className="p-button-raised p-button-rounded p-button-danger" icon="pi pi-trash"/>
-            </span>
-            <span>
-                <Link to={`/frisbee/${rowData.id}`}>
-                <Button className="p-button-raised p-button-rounded p-button-success" icon="pi pi-file-edit"/>
-            </Link>
-            </span>
-        </>
-    )
+type fullData = {
+    frisbee: Frisbee,
+    process: Process | null
 }
 
-const FrisbeePage: FC = () => {
+const fetchPageData = async (navigation: NavigateFunction, authContext: IAuthContext, frisbeeId: number): Promise<fullData> => {
+    await checkTokens(navigation, authContext)
+    const frisbee = await getOneFrisbeeById(frisbeeId, navigation)
+    let process = null
+    if (frisbee.processId) {
+        process = await getProcessById(frisbee.processId)
+    }
+    return {frisbee, process}
+}
 
-    const navigate = useNavigate()
+const FrisbeePage = () => {
+    const {frisbeeId} = useParams()
+    const navigation = useNavigate()
     const authContext = useContext(AuthContext)
+    const clientQuery = useQueryClient()
+
+    if (!frisbeeId) {
+        return <Navigate to='/404'/>
+    }
 
     const {data, isLoading} = useQuery({
-        queryKey: ['all_frisbees'],
+        queryKey: [`frisbee_${frisbeeId}`],
         queryFn: async () => {
-            await checkTokens(navigate, authContext)
-            return await getAllFrisbee(navigate, authContext)
+            return await fetchPageData(navigation, authContext, parseInt(frisbeeId))
         }
     })
+
+    const processes = useQuery({
+        queryKey: ['all_processes'],
+        queryFn: async () => {
+            await checkTokens(navigation, authContext)
+            return await getAllProcesses()
+        }
+    })
+
+    const addProcess = useMutation({
+        mutationKey: ['addProcess'],
+        mutationFn: async (processId: number) => {
+            if (data && data.frisbee) {
+                let {id, ...newFrisbee} = {...data?.frisbee}
+                newFrisbee.processId = processId
+                await checkTokens(navigation, authContext)
+                await editOneFrisbee(parseInt(frisbeeId), newFrisbee)
+            } else {
+                throw new Error('Impossible d\'ajouter un process, veuillez reesayer plus tard')
+            }
+        },
+        onSuccess: async () => {
+            await clientQuery.invalidateQueries([`frisbee_${frisbeeId}`])
+        }
+    })
+
+    if (isLoading) {
+        return (
+            <section>
+                <div className="mx-auto max-w-7xl mb-5">
+                    <h1 className="text-4xl font-semibold text-gray-900">Frisbee n°{frisbeeId}</h1>
+                </div>
+                <div className="px-6 py-4 rounded shadow-lg border">
+                    Chargement...
+                </div>
+                <div className="px-6 mt-5 py-4 rounded shadow-lg border">
+                    <h2 className=" underline font-bold text-2xl mb-2">Process</h2>
+                    Chargement...
+                </div>
+            </section>
+        )
+    }
 
     return (
         <section>
             <div className="mx-auto max-w-7xl mb-5">
-                <h1 className="text-4xl font-semibold text-gray-900">Frisbes</h1>
+                <h1 className="text-4xl font-semibold text-gray-900">Frisbee n°{frisbeeId}</h1>
             </div>
-
-            <DataTable loading={isLoading} value={data}>
-                <Column field="name" sortable={true} header="Nom"/>
-                <Column field="price_wt" sortable={true} header="Prix"/>
-                <Column field="range" sortable={true} header="Gamme"/>
-                <Column field="id" body={EditRow}></Column>
-            </DataTable>
+            <div className="px-6 py-4 rounded shadow-lg border">
+                <h2 className=" underline font-bold text-2xl mb-2">{data?.frisbee?.name}</h2>
+                <p className="text-gray-700 text-base mb-5">
+                    {data?.frisbee?.description}
+                </p>
+                <h3 className="text-l mb-5"><span
+                    className="underline font-bold ">Prix HT :</span> {data?.frisbee?.price_wt}€</h3>
+                <h3 className="text-l mb-5"><span className="underline font-bold ">Gamme :</span> {data?.frisbee?.range}
+                </h3>
+            </div>
+            <div className="px-6 mt-5 py-4 rounded shadow-lg border">
+                <h2 className=" underline font-bold text-2xl mb-2">Process</h2>
+                {
+                    data?.process ? (
+                        <>
+                            <h3 className="text-l mb-5"><span
+                                className="underline font-bold ">Nom :</span> {data?.process.name}</h3>
+                            <h3 className="text-l mb-5"><span
+                                className="underline font-bold ">Description :</span></h3>
+                            <p className="text-gray-700 text-base mb-5">
+                                {data?.process.description}
+                            </p>
+                        </>
+                    ) : 'Pas de process selectioné.'
+                }
+                <div className="flex">
+                    {processes.isLoading? "" : <Dropdown placeholder={data?.frisbee.processId? 'Changer de process' : 'Selectionez un process'} defaultValue={data?.process?.name} onChange={async (e) => {addProcess.mutate(e.value)}} optionLabel="name" optionValue="id" emptyMessage="Pas de Process disponible" options={processes.data}/>}
+                </div>
+                {addProcess.isError && <span className="text-red-500">Impossible d'ajouter un process pour le moment, merci de reesayer plsu tard</span>}
+            </div>
         </section>
     )
 }

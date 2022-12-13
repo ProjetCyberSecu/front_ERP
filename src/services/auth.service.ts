@@ -33,7 +33,7 @@ export const fillStoreFromCookies = async (): Promise<{ user: User } | { user: n
  * @param password
  */
 export const login = async (authContext: IAuthContext, username: string, password: string): Promise<void> => {
-    const validatedData = await loginSchema.validate({username, password}).catch(() => {
+    await loginSchema.validate({username, password}).catch(() => {
         throw new Error('nom d\'utilisateur et mot de passe obligatoire')
     })
     const loginResult = await fetch(`${import.meta.env.VITE_AUTH_API_HOST}/api/auth/login`, {
@@ -50,8 +50,8 @@ export const login = async (authContext: IAuthContext, username: string, passwor
         try {
             const responseContent = await loginResult.json() as { accessToken: string, refreshToken: string }
             const {accessToken, refreshToken} = responseContent
-            Cookies.set('accessToken', accessToken)
-            Cookies.set('refreshToken', refreshToken)
+            Cookies.set('accessToken', accessToken, {sameSite: 'strict'})
+            Cookies.set('refreshToken', refreshToken, {sameSite: 'strict'})
             await fillStoreFromCookies()
         } catch (e) {
             throw new Error('Une erreur est survenue veuillez reesayer plus tard')
@@ -103,8 +103,8 @@ export const checkTokens = async (navigation: NavigateFunction,authContext: IAut
 
         if (result.ok) {
             const { accessToken, refreshToken } = await result.json()
-            Cookies.set('accessToken', accessToken)
-            Cookies.set('refreshToken', refreshToken)
+            Cookies.set('accessToken', accessToken, {sameSite: 'strict'})
+            Cookies.set('refreshToken', refreshToken, {sameSite: 'strict'})
             const {user} = await fillStoreFromCookies()
             authContext.user = user
         } else {
