@@ -1,42 +1,115 @@
 import Cookies from "js-cookie";
 import {authUserSchema, loginSchema, User} from "../dataValidation/authUserDatavalidation";
 import jwtDecode from "jwt-decode";
+import {IAuthContext} from "../App";
+import {NavigateFunction} from "react-router-dom";
+import dayjs from "dayjs";
+import {VITE_AUTH_API_HOST} from "../env";
 
-const sampleToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmaXJzdG5hbWUiOiJCQXNpbGUiLCJsYXN0bmFtZSI6IkxlY291dHVyaWVyIiwicm9sZSI6ImFkbWluIn0.JlJJIVyuGIqvsQNKqg8Axy_dFM3UwTrvYocahabIfPc'
+/**
+ * Function that fill ReactAuthContext depending on cookies
+ * You might call it after you filled or removed auth cookies
+ */
+export const fillStoreFromCookies = async (): Promise<{ user: User } | { user: null }> => {
+    const accessToken: string | undefined = Cookies.get('accessToken')
+    const refreshToken: string | undefined = Cookies.get('refreshToken')
 
-export const fillStoreFromCookies = async (): Promise<{user: User} | {user: null}> => {
-    const cookieContent: string | undefined = Cookies.get('auth')
-
-    if (cookieContent) {
+    if (accessToken && refreshToken) {
         try {
-            const userObj = jwtDecode(cookieContent)
+            const userObj = jwtDecode(accessToken)
             return {user: await authUserSchema.validate(userObj)}
-            //TODO set user to auth context
         } catch (e) {
-            Cookies.remove('auth')
+            Cookies.remove('accessToken')
+            Cookies.remove('refreshToken')
             return {user: null}
         }
     }
     return {user: null}
 }
 
-export const login = async (username: string, password: string): Promise<string> => {
-    const validatedData = await loginSchema.validate({username, password}).catch(() => {throw new Error('nom d\'utilisateur et mot de passe obligatoire')})
-    // TODO fetch data from for real
-    // const result = await fetch('')
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    Cookies.set('auth', sampleToken)
-    return sampleToken
+/**
+ * Function that connect user depending on provided username and password
+ * @param authContext
+ * @param username
+ * @param password
+ */
+export const login = async (authContext: IAuthContext, username: string, password: string): Promise<void> => {
+    await loginSchema.validate({username, password}).catch(() => {
+        throw new Error('nom d\'utilisateur et mot de passe obligatoire')
+    })
+    const loginResult = await fetch(`${VITE_AUTH_API_HOST}/api/auth/login`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username,
+            password
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    if (loginResult.ok) {
+        try {
+            const responseContent = await loginResult.json() as { accessToken: string, refreshToken: string }
+            const {accessToken, refreshToken} = responseContent
+            Cookies.set('accessToken', accessToken, {sameSite: 'strict'})
+            Cookies.set('refreshToken', refreshToken, {sameSite: 'strict'})
+            await fillStoreFromCookies()
+        } catch (e) {
+            throw new Error('Une erreur est survenue veuillez reesayer plus tard')
+        }
+    } else if (loginResult.status === 401) {
+        throw new Error('Identifiant ou mot de passe incorrecte')
+    } else {
+        throw new Error('Une erreur est survenue veuillez reesayer plus tard')
+    }
 }
 
-// export const SetUpLogin = async (jwt: string) => {
-//     const authStore = useAuthStore()
-//     try {
-//         const userObj: User = jwtDecode(jwt)
-//         const user: User = await authUserSchema.validate(userObj)
-//         Cookies.set('auth', jwt)
-//         authStore.setUser(user)
-//     } catch (e) {
-//         throw  new Error('Une erreur est survenue')
-//     }
-// }
+/**
+ * Function that logout user and redirect it to login page
+ * @param navigate
+ * @param authContext
+ */
+export const logout = (navigate: NavigateFunction, authContext: IAuthContext): void => {
+    Cookies.remove('accessToken')
+    Cookies.remove('refreshToken')
+    authContext.user = null
+    navigate('/login')
+}
+
+/**
+ * Function that check if token are still valid and try to refresh them if not. OR logout user if it fails.
+ * Call it every time you need to request logic API
+ * @param navigation
+ * @param authContext
+ */
+export const checkTokens = async (navigation: NavigateFunction,authContext: IAuthContext) => {
+    if (!authContext.user) {
+        logout(navigation, authContext)
+        return
+    }
+    const expirationDate = dayjs(authContext.user.exp)
+
+    if (dayjs().diff(expirationDate, 'minutes') >= -2) {
+        console.log('Refreshing tokens')
+        const result = await fetch(`${VITE_AUTH_API_HOST}/api/auth/refresh`, {
+            method: 'POST',
+            headers: {
+                authorization: `Bearer ${Cookies.get('refreshToken')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                accessToken: Cookies.get('accessToken')
+            })
+        })
+
+        if (result.ok) {
+            const { accessToken, refreshToken } = await result.json()
+            Cookies.set('accessToken', accessToken, {sameSite: 'strict'})
+            Cookies.set('refreshToken', refreshToken, {sameSite: 'strict'})
+            const {user} = await fillStoreFromCookies()
+            authContext.user = user
+        } else {
+            logout(navigation, authContext)
+        }
+    }
+}

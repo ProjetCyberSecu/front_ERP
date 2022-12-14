@@ -3,8 +3,11 @@ import './App.css'
 import {QueryClient, QueryClientProvider, useQuery} from '@tanstack/react-query'
 import {User} from "./dataValidation/authUserDatavalidation";
 import Router from "./Router";
+import "primereact/resources/themes/lara-light-indigo/theme.css";
+import "primereact/resources/primereact.min.css"
+import "primeicons/primeicons.css";
 
-interface IAuthContext {
+export interface IAuthContext {
     user: User | null
 }
 
