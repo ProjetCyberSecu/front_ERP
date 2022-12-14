@@ -1,5 +1,6 @@
 import Cookies from "js-cookie";
 import {APiResponse} from "../Types";
+import {VITE_FRISBEE_API_HOST} from "../env";
 
 export type Ingredient = {
     id: number,
@@ -10,7 +11,7 @@ export type Ingredient = {
 export type EditableIngredient = Omit<Ingredient, 'id'>
 
 export const getAllIngredient = async (): Promise<Ingredient[]> => {
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/ingredients`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -25,7 +26,7 @@ export const getAllIngredient = async (): Promise<Ingredient[]> => {
 
 export const deleteOneIngredient = async (ingredientId: number): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {
         method: 'DELETE',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
@@ -42,7 +43,7 @@ export const deleteOneIngredient = async (ingredientId: number): Promise<void> =
 
 export const createIngredient = async (ingredient: EditableIngredient): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/ingredients`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients`, {
         method: 'POST',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,
@@ -61,7 +62,7 @@ export const createIngredient = async (ingredient: EditableIngredient): Promise<
 
 export const editIngredientById = async (ingredientId: number, ingredient: EditableIngredient): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {
         method: 'PATCH',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,

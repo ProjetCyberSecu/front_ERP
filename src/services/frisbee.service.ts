@@ -4,6 +4,7 @@ import {NavigateFunction} from "react-router-dom";
 import {IAuthContext} from "../App";
 import EditFrisbee from "../components/pages/EditFrisbee";
 import {APiResponse} from "../Types";
+import {VITE_FRISBEE_API_HOST} from "../env";
 
 export type Frisbee = {
     "id": number,
@@ -20,12 +21,7 @@ export type Frisbee = {
  * @param authContext
  */
 export const getAllFrisbee = async (navigate: NavigateFunction, authContext: IAuthContext): Promise<Frisbee[]> => {
-
-    // TODO uncomment below to request api endpoint
-
-    console.log(import.meta.env.VITE_FRISBEE_API_HOST)
-
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/frisbees`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -44,7 +40,7 @@ export const getAllFrisbee = async (navigate: NavigateFunction, authContext: IAu
 
 export const getOneFrisbeeById = async (frisbeeId: number, navigate: NavigateFunction): Promise<Frisbee> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -65,7 +61,7 @@ export const getOneFrisbeeById = async (frisbeeId: number, navigate: NavigateFun
 
 export const deleteOneFrisbee = async (frisbeeId: number): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
         method: 'DELETE',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
@@ -84,7 +80,7 @@ export const editOneFrisbee = async (frisbeeId: number, frisbee: EditFrisbee): P
 
     const frisbeeToReturn = frisbee.processId? frisbee : {...frisbee, processId: null}
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/frisbees/${frisbeeId}`, {
         method: 'PATCH',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,
@@ -103,7 +99,7 @@ export const editOneFrisbee = async (frisbeeId: number, frisbee: EditFrisbee): P
 
 export const createFrisbee = async (frisbee: EditFrisbee): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/frisbees`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/frisbees`, {
         method: 'POST',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,

@@ -4,6 +4,7 @@ import jwtDecode from "jwt-decode";
 import {IAuthContext} from "../App";
 import {NavigateFunction} from "react-router-dom";
 import dayjs from "dayjs";
+import {VITE_AUTH_API_HOST} from "../env";
 
 /**
  * Function that fill ReactAuthContext depending on cookies
@@ -36,7 +37,7 @@ export const login = async (authContext: IAuthContext, username: string, passwor
     await loginSchema.validate({username, password}).catch(() => {
         throw new Error('nom d\'utilisateur et mot de passe obligatoire')
     })
-    const loginResult = await fetch(`${import.meta.env.VITE_AUTH_API_HOST}/api/auth/login`, {
+    const loginResult = await fetch(`${VITE_AUTH_API_HOST}/api/auth/login`, {
         method: 'POST',
         body: JSON.stringify({
             username,
@@ -90,7 +91,7 @@ export const checkTokens = async (navigation: NavigateFunction,authContext: IAut
 
     if (dayjs().diff(expirationDate, 'minutes') >= -2) {
         console.log('Refreshing tokens')
-        const result = await fetch(`${import.meta.env.VITE_AUTH_API_HOST}/api/auth/refresh`, {
+        const result = await fetch(`${VITE_AUTH_API_HOST}/api/auth/refresh`, {
             method: 'POST',
             headers: {
                 authorization: `Bearer ${Cookies.get('refreshToken')}`,

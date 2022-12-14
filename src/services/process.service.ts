@@ -2,6 +2,7 @@ import Cookies from "js-cookie";
 import {EditableProcess} from "../components/pages/CreateProcess";
 import {NavigateFunction} from "react-router-dom";
 import {APiResponse} from "../Types";
+import {VITE_FRISBEE_API_HOST} from "../env";
 
 export type ErpApiResponse = { status: number, response: Process }
 
@@ -12,7 +13,7 @@ export type Process = {
 }
 
 export const getProcessById = async (processId: number): Promise<Process> => {
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes/${processId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes/${processId}`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -27,7 +28,7 @@ export const getProcessById = async (processId: number): Promise<Process> => {
 }
 
 export const getAllProcesses = async (): Promise<Process[]> => {
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -42,7 +43,7 @@ export const getAllProcesses = async (): Promise<Process[]> => {
 
 export const createProcess = async (process: EditableProcess): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes`, {
         method: 'POST',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,
@@ -61,7 +62,7 @@ export const createProcess = async (process: EditableProcess): Promise<void> => 
 
 export const editProcessById = async (processId: number, process: EditableProcess): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes/${processId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes/${processId}`, {
         method: 'PATCH',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`,
@@ -80,7 +81,7 @@ export const editProcessById = async (processId: number, process: EditableProces
 
 export const getOneProcessById = async (processId: number, navigate: NavigateFunction): Promise<Process> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes/${processId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes/${processId}`, {
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
         }
@@ -101,7 +102,7 @@ export const getOneProcessById = async (processId: number, navigate: NavigateFun
 
 export const deleteOneProcess = async (processId: number): Promise<void> => {
 
-    const result = await fetch(`${import.meta.env.VITE_FRISBEE_API_HOST}/processes/${processId}`, {
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/processes/${processId}`, {
         method: 'DELETE',
         headers: {
             'authorization': `Bearer ${Cookies.get('accessToken')}`
