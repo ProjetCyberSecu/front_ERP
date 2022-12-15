@@ -87,7 +87,8 @@ export const checkTokens = async (navigation: NavigateFunction,authContext: IAut
         logout(navigation, authContext)
         return
     }
-    const expirationDate = dayjs(authContext.user.exp)
+
+    const expirationDate = dayjs.unix(authContext.user.exp)
 
     if (dayjs().diff(expirationDate, 'minutes') >= -2) {
         console.log('Refreshing tokens')
