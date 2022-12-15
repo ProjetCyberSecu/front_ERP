@@ -16,6 +16,7 @@ import CreateFrisbee from "./components/pages/CreateFrisbee";
 import CreateProcess from "./components/pages/CreateProcess";
 import EditProcess from "./components/pages/EditProcess";
 import CreateIngredient from "./components/pages/CreateIngredient";
+import Cookies from "js-cookie";
 
 const Router = () => {
     const [isLoaded, setIsLoaded] = useState(false)
@@ -23,8 +24,10 @@ const Router = () => {
 
     useEffect(() => {
         const fetchCookie = async () => {
+            console.log(Cookies.get('accessToken'))
             const user = await fillStoreFromCookies()
             authContext.user = user.user
+            console.log(user)
             setIsLoaded(true)
         }
         fetchCookie().then()
@@ -38,23 +41,23 @@ const Router = () => {
                             <Home/>
                         </RequireAuth>
                     }>
-                        <Route path="/" element={<Dashboard />}/>
-                        <Route path="/frisbees" element={<FrisbeesPage />}/>
-                        <Route path="/frisbees/create" element={<CreateFrisbee />} />
-                        <Route path="/frisbee/:frisbeeId/edit" element={<EditFrisbee />}/>
-                        <Route path="/frisbee/:frisbeeId" element={<FrisbeePage />}/>
-                        <Route path="/ingredients" element={<IngredientPage />}/>
-                        <Route path="/ingredients/create" element={<CreateIngredient />}/>
-                        <Route path="/processes" element={<ProcessPage />}/>
-                        <Route path="/processes/create" element={<CreateProcess />}/>
-                        <Route path="/processes/:processId/edit" element={<EditProcess />}/>
+                        <Route path="/" element={<RequireAuth><Dashboard /></RequireAuth>}/>
+                        <Route path="/frisbees" element={<RequireAuth><FrisbeesPage /></RequireAuth>}/>
+                        <Route path="/frisbees/create" element={<RequireAuth><CreateFrisbee /></RequireAuth>} />
+                        <Route path="/frisbee/:frisbeeId/edit" element={<RequireAuth><EditFrisbee /></RequireAuth>}/>
+                        <Route path="/frisbee/:frisbeeId" element={<RequireAuth><FrisbeePage /></RequireAuth>}/>
+                        <Route path="/ingredients" element={<RequireAuth><IngredientPage /></RequireAuth>}/>
+                        <Route path="/ingredients/create" element={<RequireAuth><CreateIngredient /></RequireAuth>}/>
+                        <Route path="/processes" element={<RequireAuth><ProcessPage /></RequireAuth>}/>
+                        <Route path="/processes/create" element={<RequireAuth><CreateProcess /></RequireAuth>}/>
+                        <Route path="/processes/:processId/edit" element={<RequireAuth><EditProcess /></RequireAuth>}/>
                     </Route>
                     <Route path='/login' element={
                         <RequireNotToBeLoggedIn>
                             <Login/>
                         </RequireNotToBeLoggedIn>
                     }/>
-                    <Route path="*" element={<Navigate to="/404"/>}/>
+                    <Route path="*" element={<Navigate to='/404' state={{ from: location }} replace/>}/>
                 </Routes>
             )}
         </>

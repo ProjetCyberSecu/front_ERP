@@ -14,6 +14,8 @@ export const fillStoreFromCookies = async (): Promise<{ user: User } | { user: n
     const accessToken: string | undefined = Cookies.get('accessToken')
     const refreshToken: string | undefined = Cookies.get('refreshToken')
 
+    console.log(accessToken, refreshToken)
+
     if (accessToken && refreshToken) {
         try {
             const userObj = jwtDecode(accessToken)

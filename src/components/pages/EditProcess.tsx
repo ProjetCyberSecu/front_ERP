@@ -16,7 +16,7 @@ const EditProcess: FC = () => {
 
 
     if (!processId) {
-        return (<Navigate to='/404'/>)
+        return (<Navigate to='/404' state={{ from: location }} replace/>)
     }
 
     const {data, isLoading} = useQuery({

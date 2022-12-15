@@ -1,5 +1,5 @@
 import React, {FC, useContext} from 'react'
-import {Navigate, useNavigate, useParams} from "react-router-dom";
+import {Navigate, useLocation, useNavigate, useParams} from "react-router-dom";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {checkTokens} from "../../services/auth.service";
 import {AuthContext} from "../../App";
@@ -14,9 +14,10 @@ const EditFrisbee: FC = () => {
     const navigation = useNavigate()
     const authContext = useContext(AuthContext)
     const queryClient = useQueryClient()
+    const location = useLocation()
 
     if (!frisbeeId) {
-        return (<Navigate to='/404'/>)
+        return (<Navigate to='/404' state={{ from: location }} replace/>)
     }
 
     const {data, isLoading} = useQuery({

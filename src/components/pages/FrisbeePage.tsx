@@ -6,7 +6,9 @@ import {AuthContext, IAuthContext} from "../../App";
 import {editOneFrisbee, Frisbee, getOneFrisbeeById} from "../../services/frisbee.service";
 import type {Process} from "../../services/process.service";
 import {getAllProcesses, getProcessById} from "../../services/process.service";
-import {Dropdown} from "primereact/dropdown";
+import FrisbeeInfo from "../Frisbee/FrisbeeInfo";
+import FrisbeeProcess from "../Frisbee/FrisbeeProcess";
+import FrisbeeIngredients from "../Frisbee/FrisbeeIngredients";
 
 type fullData = {
     frisbee: Frisbee,
@@ -30,7 +32,7 @@ const FrisbeePage = () => {
     const clientQuery = useQueryClient()
 
     if (!frisbeeId) {
-        return <Navigate to='/404'/>
+        return <Navigate to='/404' state={{ from: location }} replace/>
     }
 
     const {data, isLoading} = useQuery({
@@ -65,58 +67,14 @@ const FrisbeePage = () => {
         }
     })
 
-    if (isLoading) {
-        return (
-            <section>
-                <div className="mx-auto max-w-7xl mb-5">
-                    <h1 className="text-4xl font-semibold text-gray-900">Frisbee n°{frisbeeId}</h1>
-                </div>
-                <div className="px-6 py-4 rounded shadow-lg border">
-                    Chargement...
-                </div>
-                <div className="px-6 mt-5 py-4 rounded shadow-lg border">
-                    <h2 className=" underline font-bold text-2xl mb-2">Process</h2>
-                    Chargement...
-                </div>
-            </section>
-        )
-    }
-
     return (
         <section>
             <div className="mx-auto max-w-7xl mb-5">
                 <h1 className="text-4xl font-semibold text-gray-900">Frisbee n°{frisbeeId}</h1>
             </div>
-            <div className="px-6 py-4 rounded shadow-lg border">
-                <h2 className=" underline font-bold text-2xl mb-2">{data?.frisbee?.name}</h2>
-                <p className="text-gray-700 text-base mb-5">
-                    {data?.frisbee?.description}
-                </p>
-                <h3 className="text-l mb-5"><span
-                    className="underline font-bold ">Prix HT :</span> {data?.frisbee?.price_wt}€</h3>
-                <h3 className="text-l mb-5"><span className="underline font-bold ">Gamme :</span> {data?.frisbee?.range}
-                </h3>
-            </div>
-            <div className="px-6 mt-5 py-4 rounded shadow-lg border">
-                <h2 className=" underline font-bold text-2xl mb-2">Process</h2>
-                {
-                    data?.process ? (
-                        <>
-                            <h3 className="text-l mb-5"><span
-                                className="underline font-bold ">Nom :</span> {data?.process.name}</h3>
-                            <h3 className="text-l mb-5"><span
-                                className="underline font-bold ">Description :</span></h3>
-                            <p className="text-gray-700 text-base mb-5">
-                                {data?.process.description}
-                            </p>
-                        </>
-                    ) : 'Pas de process selectioné.'
-                }
-                <div className="flex">
-                    {processes.isLoading? "" : <Dropdown placeholder={data?.frisbee.processId? 'Changer de process' : 'Selectionez un process'} defaultValue={data?.process?.name} onChange={async (e) => {addProcess.mutate(e.value)}} optionLabel="name" optionValue="id" emptyMessage="Pas de Process disponible" options={processes.data}/>}
-                </div>
-                {addProcess.isError && <span className="text-red-500">Impossible d'ajouter un process pour le moment, merci de reesayer plsu tard</span>}
-            </div>
+            <FrisbeeInfo frisbee={data?.frisbee} isLoading={isLoading} />
+            <FrisbeeProcess addProcess={addProcess} processesQuery={processes} process={data?.process} frisbee={data?.frisbee}/>
+            <FrisbeeIngredients frisbeeId={frisbeeId}/>
         </section>
     )
 }
