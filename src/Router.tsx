@@ -17,6 +17,9 @@ import CreateProcess from "./components/pages/CreateProcess";
 import EditProcess from "./components/pages/EditProcess";
 import CreateIngredient from "./components/pages/CreateIngredient";
 import Cookies from "js-cookie";
+import EditIngredient from "./components/pages/EditIngredient";
+import Ingredient from "./components/pages/Ingredient";
+import Process from "./components/pages/Process";
 
 const Router = () => {
     const [isLoaded, setIsLoaded] = useState(false)
@@ -24,10 +27,8 @@ const Router = () => {
 
     useEffect(() => {
         const fetchCookie = async () => {
-            console.log(Cookies.get('accessToken'))
             const user = await fillStoreFromCookies()
             authContext.user = user.user
-            console.log(user)
             setIsLoaded(true)
         }
         fetchCookie().then()
@@ -47,8 +48,11 @@ const Router = () => {
                         <Route path="/frisbee/:frisbeeId/edit" element={<RequireAuth><EditFrisbee /></RequireAuth>}/>
                         <Route path="/frisbee/:frisbeeId" element={<RequireAuth><FrisbeePage /></RequireAuth>}/>
                         <Route path="/ingredients" element={<RequireAuth><IngredientPage /></RequireAuth>}/>
+                        <Route path="/ingredients/:ingredientId" element={<RequireAuth><Ingredient /></RequireAuth>}/>
+                        <Route path="/ingredients/:ingredientId/edit" element={<RequireAuth><EditIngredient /></RequireAuth>}/>
                         <Route path="/ingredients/create" element={<RequireAuth><CreateIngredient /></RequireAuth>}/>
                         <Route path="/processes" element={<RequireAuth><ProcessPage /></RequireAuth>}/>
+                        <Route path="/processes/:processId" element={<RequireAuth><Process /></RequireAuth>}/>
                         <Route path="/processes/create" element={<RequireAuth><CreateProcess /></RequireAuth>}/>
                         <Route path="/processes/:processId/edit" element={<RequireAuth><EditProcess /></RequireAuth>}/>
                     </Route>

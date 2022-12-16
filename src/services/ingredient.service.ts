@@ -26,6 +26,23 @@ export const getAllIngredient = async (): Promise<Ingredient[]> => {
     return []
 }
 
+export const getOneIngredient = async (ingredientId: number): Promise<Ingredient> => {
+
+    const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {
+        headers: {
+            'authorization': `Bearer ${Cookies.get('accessToken')}`
+        }
+    })
+    if (result.ok) {
+        const parsedResult = await result.json() as APiResponse<Ingredient>
+        return parsedResult.response
+    } else if (result.status === 401) {
+        throw new Error('Vous n\' etes pas authorisé a recuperer les ingredients')
+    } else {
+        throw new Error('Une erreur est survenue')
+    }
+}
+
 export const deleteOneIngredient = async (ingredientId: number): Promise<void> => {
 
     const result = await fetch(`${VITE_FRISBEE_API_HOST}/ingredients/${ingredientId}`, {

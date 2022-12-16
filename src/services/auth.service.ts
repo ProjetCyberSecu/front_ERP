@@ -14,7 +14,6 @@ export const fillStoreFromCookies = async (): Promise<{ user: User } | { user: n
     const accessToken: string | undefined = Cookies.get('accessToken')
     const refreshToken: string | undefined = Cookies.get('refreshToken')
 
-    console.log(accessToken, refreshToken)
 
     if (accessToken && refreshToken) {
         try {
@@ -93,7 +92,6 @@ export const checkTokens = async (navigation: NavigateFunction,authContext: IAut
     const expirationDate = dayjs.unix(authContext.user.exp)
 
     if (dayjs().diff(expirationDate, 'minutes') >= -2) {
-        console.log('Refreshing tokens')
         const result = await fetch(`${VITE_AUTH_API_HOST}/api/auth/refresh`, {
             method: 'POST',
             headers: {

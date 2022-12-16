@@ -141,19 +141,11 @@ const Example: FC<Props> = ({sidebarOpen, setSidebar}) => {
                                         </nav>
                                     </div>
                                     <div className="flex flex-shrink-0 bg-gray-700 p-4">
-                                        <a href="#" className="group block flex-shrink-0">
+                                        <a href="#" className="group block w-full flex-shrink-0">
                                             <div className="flex items-center">
-                                                <div>
-                                                    <img
-                                                        className="inline-block h-10 w-10 rounded-full"
-                                                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                                                        alt=""
-                                                    />
-                                                </div>
                                                 <div className="ml-3">
-                                                    <p className="text-base font-medium text-white">Tom Cook</p>
-                                                    <p className="text-sm font-medium text-gray-400 group-hover:text-gray-300">View
-                                                        profile</p>
+                                                    <p className="text-sm font-medium text-white">{authContext.user?.firstname} {authContext.user?.lastname}</p>
+                                                    <button onClick={handleLogout} className="text-s font-medium text-gray-300 group-hover:text-gray-200">Se deconnecter</button>
                                                 </div>
                                             </div>
                                         </a>
